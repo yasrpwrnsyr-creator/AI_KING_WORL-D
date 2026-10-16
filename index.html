@@ -1,1 +1,86 @@
 
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI KING WORLD</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#080808;color:#f5f5f5;
+  font-family:Arial,Tahoma,sans-serif;
+  min-height:100vh;display:flex;justify-content:center;
+}
+.app{width:100%;max-width:700px;padding:22px 16px}
+header{text-align:center;padding:24px 0}
+.crown{font-size:42px}
+h1{color:#e7bd55;letter-spacing:2px;font-size:28px}
+.sub{color:#aaa;font-size:14px}
+.panel{border:1px solid #4b3a17;border-radius:18px;
+  background:#111;padding:16px}
+#chat{height:52vh;min-height:280px;overflow:auto;
+  display:flex;flex-direction:column;gap:12px;padding:8px 0}
+.msg{padding:12px 15px;border-radius:14px;max-width:90%;
+  line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.bot{background:#202020;border:1px solid #383020;align-self:flex-start}
+.user{background:#6e531a;align-self:flex-end}
+form{display:flex;gap:8px;margin-top:12px}
+input{flex:1;min-width:0;background:#080808;color:white;
+  border:1px solid #675020;border-radius:12px;padding:14px;
+  font-size:16px;outline:none}
+button{background:#d8ad42;color:#111;border:0;border-radius:12px;
+  padding:0 18px;font-size:15px;font-weight:bold;cursor:pointer}
+.note{font-size:12px;color:#999;text-align:center;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="crown">♛</div>
+<h1>AI KING WORLD</h1>
+<div class="sub">دنیای هوش مصنوعی، همیشه کنار تو</div>
+</header>
+<div class="panel">
+<div id="chat">
+<div class="msg bot">سلام! به AI KING WORLD خوش اومدی 👑
+من آماده‌ام باهات گفتگو کنم. چه چیزی توی ذهنته؟</div>
+</div>
+<form id="form">
+<input id="message" placeholder="پیامت رو بنویس..." autocomplete="off" required>
+<button type="submit">ارسال</button>
+</form>
+</div>
+<p class="note">AI KING WORLD · نسخه اولیه</p>
+</div>
+<script>
+const form=document.getElementById('form');
+const input=document.getElementById('message');
+const chat=document.getElementById('chat');
+
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  const text=input.value.trim();
+  if(!text)return;
+  addMessage(text,'user');
+  input.value='';
+  let reply='پیامت دریافت شد! برای پاسخ‌گویی واقعی و هوشمند، هنوز باید سرویس هوش مصنوعی به برنامه متصل شود.';
+  if(/سلام|درود|hello/i.test(text))
+    reply='سلاممم! 👑 به AI KING WORLD خوش اومدی!';
+  else if(/اسمت چیه|نامت چیست/i.test(text))
+    reply='من AI KING WORLD هستم!';
+  else if(/خوبی|حالت چطوره/i.test(text))
+    reply='ممنون که پرسیدی! آماده‌ام کمکت کنم 🖤';
+  setTimeout(()=>addMessage(reply,'bot'),300);
+});
+function addMessage(text,type){
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  div.textContent=text;
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
+}
+</script>
+</body>
+</html>
+
