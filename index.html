@@ -1,30 +1,32 @@
 
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080808">
 <title>AI KING WORLD</title>
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;background:#080808;color:#f5f5f5;
-  font-family:Tahoma,Arial,sans-serif;min-height:100vh;
+  font-family:Tahoma,Arial,sans-serif;min-height:100vh
 }
-.app{width:100%;max-width:760px;margin:auto;padding:20px 14px}
-header{text-align:center;padding:24px 0}
-.crown{font-size:48px;color:#e7bd55}
-h1{font-size:28px;color:#e7bd55;margin:10px 0}
-.sub{font-size:14px;color:#aaa}
-.panel{background:#111;border:1px solid #59451d;border-radius:18px;padding:14px}
+.app{width:100%;max-width:760px;margin:auto;padding:16px 12px}
+header{text-align:center;padding:16px 0}
+.crown{font-size:46px;color:#e7bd55}
+h1{font-size:27px;color:#e7bd55;margin:8px 0}
+.sub,.note{font-size:12px;color:#aaa}
+.toolbar{display:flex;gap:8px;margin-bottom:10px}
+.toolbar button{flex:1;padding:11px 6px}
+.panel{background:#111;border:1px solid #59451d;border-radius:18px;padding:12px}
 #chat{
   height:55vh;min-height:300px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:12px;padding:8px 0;
+  display:flex;flex-direction:column;gap:12px;padding:8px 0
 }
 .msg{
-  max-width:92%;padding:12px 14px;border-radius:14px;
-  white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;
+  max-width:94%;padding:12px 14px;border-radius:14px;
+  white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9
 }
 .bot{align-self:flex-start;background:#202020;border:1px solid #42361d}
 .user{align-self:flex-end;background:#6b5019;color:#fff}
@@ -32,14 +34,16 @@ form{display:flex;gap:8px;margin-top:12px}
 input{
   flex:1;min-width:0;background:#080808;color:#fff;
   border:1px solid #6b5424;border-radius:12px;
-  padding:14px;font-size:16px;outline:none;
+  padding:13px;font-size:16px
 }
 button{
   background:#e0b94f;color:#111;border:0;border-radius:12px;
-  padding:0 17px;font-weight:bold;font-size:15px;cursor:pointer;
+  padding:11px 15px;font-weight:bold;font-size:14px;cursor:pointer
 }
 button:disabled{opacity:.5}
-.note{text-align:center;color:#999;font-size:12px;line-height:1.9}
+.toolbar .secondary{background:#292929;color:#eee;border:1px solid #59451d}
+.note{text-align:center;line-height:1.9}
+.status{font-size:12px;color:#c9a94c;min-height:20px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -50,17 +54,20 @@ button:disabled{opacity:.5}
     <div class="sub">دنیای هوش مصنوعی، همیشه کنار تو</div>
   </header>
 
+  <div class="toolbar">
+    <button class="secondary" id="newChat" type="button">＋ گفتگوی جدید</button>
+    <button class="secondary" id="clearChat" type="button">پاک کردن تاریخچه</button>
+  </div>
+
   <div class="panel">
-    <div id="chat" aria-live="polite">
-      <div class="msg bot">سلام! 👑 به AI KING WORLD خوش اومدی.
-من آماده‌ام باهات گفت‌وگو کنم. هر سؤالی داری بپرس!</div>
-    </div>
+    <div id="chat" aria-live="polite"></div>
     <form id="form">
       <input id="message" placeholder="پیامت رو بنویس..." autocomplete="off" required>
       <button id="send" type="submit">ارسال</button>
     </form>
+    <div class="status" id="status"></div>
   </div>
-  <p class="note">AI KING WORLD · نسخه هوشمند آزمایشی</p>
+  <p class="note">AI KING WORLD · نسخه هوشمند</p>
 </div>
 
 <script src="https://js.puter.com/v2/"></script>
@@ -69,11 +76,29 @@ const form = document.getElementById('form');
 const input = document.getElementById('message');
 const chat = document.getElementById('chat');
 const send = document.getElementById('send');
+const statusText = document.getElementById('status');
 
-const history = [{
+const STORAGE_KEY = 'ai_king_world_chat_v2';
+const welcome = {
+  role: 'assistant',
+  content: 'سلام! 👑 به AI KING WORLD خوش اومدی.\nمن آماده‌ام باهات گفت‌وگو کنم. هر سؤالی داری بپرس!'
+};
+const systemMessage = {
   role: 'system',
-  content: 'You are AI KING WORLD, a friendly and helpful AI assistant. Reply in Persian when the user writes in Persian. Give useful, accurate answers.'
-}];
+  content: 'You are AI KING WORLD, a friendly and helpful AI assistant. Reply in Persian when the user writes in Persian. Give useful, accurate answers. Consider earlier messages in the current conversation.'
+};
+
+let history = [];
+let busy = false;
+
+function saveHistory() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    statusText.textContent = 'تاریخچه روی این مرورگر ذخیره شد.';
+  } catch (error) {
+    statusText.textContent = 'ذخیره تاریخچه ممکن نشد.';
+  }
+}
 
 function addMessage(text, type) {
   const div = document.createElement('div');
@@ -84,46 +109,112 @@ function addMessage(text, type) {
   return div;
 }
 
+function renderHistory() {
+  chat.replaceChildren();
+  if (history.length === 0) {
+    addMessage(welcome.content, 'bot');
+    return;
+  }
+  history.forEach(message => {
+    addMessage(message.content, message.role === 'user' ? 'user' : 'bot');
+  });
+}
+
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) &&
+          parsed.every(m => m &&
+            (m.role === 'user' || m.role === 'assistant') &&
+            typeof m.content === 'string')) {
+        history = parsed;
+      }
+    }
+  } catch (error) {
+    history = [];
+  }
+  renderHistory();
+}
+
+function startNewChat() {
+  if (busy) return;
+  history = [];
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {}
+  renderHistory();
+  statusText.textContent = 'گفتگوی جدید آماده است.';
+  input.focus();
+}
+
+document.getElementById('newChat').addEventListener('click', startNewChat);
+
+document.getElementById('clearChat').addEventListener('click', () => {
+  if (busy) return;
+  if (!confirm('مطمئنی می‌خوای تاریخچه این گفتگو پاک بشه؟')) return;
+  startNewChat();
+  statusText.textContent = 'تاریخچه پاک شد.';
+});
+
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
   const text = input.value.trim();
-  if (!text || send.disabled) return;
+  if (!text || busy) return;
+
+  busy = true;
+  send.disabled = true;
+  input.disabled = true;
+  statusText.textContent = '';
 
   addMessage(text, 'user');
-  history.push({role: 'user', content: text});
-  input.value = '';
-  input.disabled = true;
-  send.disabled = true;
-
   const loading = addMessage('دارم فکر می‌کنم... 🖤', 'bot');
 
+  const previousHistory = history.slice();
+  history.push({role: 'user', content: text});
+  input.value = '';
+
   try {
-    const response = await puter.ai.chat(history);
+    const response = await puter.ai.chat([
+      systemMessage,
+      ...history
+    ]);
+
     let answer = response?.message?.content ?? response;
 
     if (Array.isArray(answer)) {
-      answer = answer.map(part => part.text || '').join('\n');
+      answer = answer.map(part =>
+        typeof part === 'string' ? part : (part.text || '')
+      ).join('\n');
     }
 
     if (typeof answer !== 'string' || !answer.trim()) {
       throw new Error('پاسخ خالی بود');
     }
 
+    answer = answer.trim();
     loading.textContent = answer;
     history.push({role: 'assistant', content: answer});
+    saveHistory();
   } catch (error) {
     loading.textContent =
-      'نتونستم وصل بشم. اینترنت و دسترسی سرویس رو بررسی کن و دوباره امتحان کن.';
-    history.pop();
+      'نتونستم جواب بدم. اتصال اینترنت یا سرویس رو بررسی کن و دوباره امتحان کن.';
+    history = previousHistory;
+    statusText.textContent = 'پیام ناموفق ذخیره نشد؛ دوباره امتحان کن.';
     console.error(error);
   } finally {
-    input.disabled = false;
+    busy = false;
     send.disabled = false;
+    input.disabled = false;
     input.focus();
   }
 });
+
+loadHistory();
 </script>
 </body>
 </html>
+
 
 
