@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -9,78 +10,120 @@
 *{box-sizing:border-box}
 body{
   margin:0;background:#080808;color:#f5f5f5;
-  font-family:Arial,Tahoma,sans-serif;
-  min-height:100vh;display:flex;justify-content:center;
+  font-family:Tahoma,Arial,sans-serif;min-height:100vh;
 }
-.app{width:100%;max-width:700px;padding:22px 16px}
+.app{width:100%;max-width:760px;margin:auto;padding:20px 14px}
 header{text-align:center;padding:24px 0}
-.crown{font-size:42px}
-h1{color:#e7bd55;letter-spacing:2px;font-size:28px}
-.sub{color:#aaa;font-size:14px}
-.panel{border:1px solid #4b3a17;border-radius:18px;
-  background:#111;padding:16px}
-#chat{height:52vh;min-height:280px;overflow:auto;
-  display:flex;flex-direction:column;gap:12px;padding:8px 0}
-.msg{padding:12px 15px;border-radius:14px;max-width:90%;
-  line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
-.bot{background:#202020;border:1px solid #383020;align-self:flex-start}
-.user{background:#6e531a;align-self:flex-end}
+.crown{font-size:48px;color:#e7bd55}
+h1{font-size:28px;color:#e7bd55;margin:10px 0}
+.sub{font-size:14px;color:#aaa}
+.panel{background:#111;border:1px solid #59451d;border-radius:18px;padding:14px}
+#chat{
+  height:55vh;min-height:300px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:12px;padding:8px 0;
+}
+.msg{
+  max-width:92%;padding:12px 14px;border-radius:14px;
+  white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;
+}
+.bot{align-self:flex-start;background:#202020;border:1px solid #42361d}
+.user{align-self:flex-end;background:#6b5019;color:#fff}
 form{display:flex;gap:8px;margin-top:12px}
-input{flex:1;min-width:0;background:#080808;color:white;
-  border:1px solid #675020;border-radius:12px;padding:14px;
-  font-size:16px;outline:none}
-button{background:#d8ad42;color:#111;border:0;border-radius:12px;
-  padding:0 18px;font-size:15px;font-weight:bold;cursor:pointer}
-.note{font-size:12px;color:#999;text-align:center;line-height:1.8}
+input{
+  flex:1;min-width:0;background:#080808;color:#fff;
+  border:1px solid #6b5424;border-radius:12px;
+  padding:14px;font-size:16px;outline:none;
+}
+button{
+  background:#e0b94f;color:#111;border:0;border-radius:12px;
+  padding:0 17px;font-weight:bold;font-size:15px;cursor:pointer;
+}
+button:disabled{opacity:.5}
+.note{text-align:center;color:#999;font-size:12px;line-height:1.9}
 </style>
 </head>
 <body>
 <div class="app">
-<header>
-<div class="crown">♛</div>
-<h1>AI KING WORLD</h1>
-<div class="sub">دنیای هوش مصنوعی، همیشه کنار تو</div>
-</header>
-<div class="panel">
-<div id="chat">
-<div class="msg bot">سلام! به AI KING WORLD خوش اومدی 👑
-من آماده‌ام باهات گفتگو کنم. چه چیزی توی ذهنته؟</div>
-</div>
-<form id="form">
-<input id="message" placeholder="پیامت رو بنویس..." autocomplete="off" required>
-<button type="submit">ارسال</button>
-</form>
-</div>
-<p class="note">AI KING WORLD · نسخه اولیه</p>
-</div>
-<script>
-const form=document.getElementById('form');
-const input=document.getElementById('message');
-const chat=document.getElementById('chat');
+  <header>
+    <div class="crown">♛</div>
+    <h1>AI KING WORLD</h1>
+    <div class="sub">دنیای هوش مصنوعی، همیشه کنار تو</div>
+  </header>
 
-form.addEventListener('submit',function(e){
-  e.preventDefault();
-  const text=input.value.trim();
-  if(!text)return;
-  addMessage(text,'user');
-  input.value='';
-  let reply='پیامت دریافت شد! برای پاسخ‌گویی واقعی و هوشمند، هنوز باید سرویس هوش مصنوعی به برنامه متصل شود.';
-  if(/سلام|درود|hello/i.test(text))
-    reply='سلاممم! 👑 به AI KING WORLD خوش اومدی!';
-  else if(/اسمت چیه|نامت چیست/i.test(text))
-    reply='من AI KING WORLD هستم!';
-  else if(/خوبی|حالت چطوره/i.test(text))
-    reply='ممنون که پرسیدی! آماده‌ام کمکت کنم 🖤';
-  setTimeout(()=>addMessage(reply,'bot'),300);
-});
-function addMessage(text,type){
-  const div=document.createElement('div');
-  div.className='msg '+type;
-  div.textContent=text;
+  <div class="panel">
+    <div id="chat" aria-live="polite">
+      <div class="msg bot">سلام! 👑 به AI KING WORLD خوش اومدی.
+من آماده‌ام باهات گفت‌وگو کنم. هر سؤالی داری بپرس!</div>
+    </div>
+    <form id="form">
+      <input id="message" placeholder="پیامت رو بنویس..." autocomplete="off" required>
+      <button id="send" type="submit">ارسال</button>
+    </form>
+  </div>
+  <p class="note">AI KING WORLD · نسخه هوشمند آزمایشی</p>
+</div>
+
+<script src="https://js.puter.com/v2/"></script>
+<script>
+const form = document.getElementById('form');
+const input = document.getElementById('message');
+const chat = document.getElementById('chat');
+const send = document.getElementById('send');
+
+const history = [{
+  role: 'system',
+  content: 'You are AI KING WORLD, a friendly and helpful AI assistant. Reply in Persian when the user writes in Persian. Give useful, accurate answers.'
+}];
+
+function addMessage(text, type) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  div.textContent = text;
   chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
+  return div;
 }
+
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text || send.disabled) return;
+
+  addMessage(text, 'user');
+  history.push({role: 'user', content: text});
+  input.value = '';
+  input.disabled = true;
+  send.disabled = true;
+
+  const loading = addMessage('دارم فکر می‌کنم... 🖤', 'bot');
+
+  try {
+    const response = await puter.ai.chat(history);
+    let answer = response?.message?.content ?? response;
+
+    if (Array.isArray(answer)) {
+      answer = answer.map(part => part.text || '').join('\n');
+    }
+
+    if (typeof answer !== 'string' || !answer.trim()) {
+      throw new Error('پاسخ خالی بود');
+    }
+
+    loading.textContent = answer;
+    history.push({role: 'assistant', content: answer});
+  } catch (error) {
+    loading.textContent =
+      'نتونستم وصل بشم. اینترنت و دسترسی سرویس رو بررسی کن و دوباره امتحان کن.';
+    history.pop();
+    console.error(error);
+  } finally {
+    input.disabled = false;
+    send.disabled = false;
+    input.focus();
+  }
+});
 </script>
 </body>
 </html>
+
 
